@@ -1,0 +1,691 @@
+"TonUtil.fif" include
+"Asm.fif" include
+
+Masterchain constant wc
+
+PROGRAM{
+
+// automatically generated from `dice.fc` 
+DECLPROC parse_number
+DECLPROC pow
+DECLPROC num_to_str
+DECLPROC str_to_num
+DECLPROC is_sep
+DECLPROC slice_to_sep
+DECLPROC slice_equal
+DECLPROC decode
+DECLPROC send_message_back
+DECLPROC load_data
+DECLPROC get_random_roll
+DECLPROC calc_payout
+DECLPROC get_bet?
+DECLPROC resolve_bet
+DECLPROC add_to_queue
+DECLPROC recv_internal
+DECLPROC recv_external
+77871 DECLMETHOD get_seqno
+110679 DECLMETHOD get_bet_seed
+84691 DECLMETHOD get_liabilities
+106717 DECLMETHOD get_by_slice
+parse_number PROC:<{
+  DUP
+  48 LESSINT
+  OVER
+  57 GTINT
+  OR
+  35 THROWIF
+  -48 ADDCONST
+}>
+pow PROC:<{
+  DUP
+  0 EQINT
+  IFJMP:<{
+    2DROP
+    1 PUSHINT
+  }>
+  1 PUSHINT
+  UNTIL:<{
+    SWAP
+    DEC
+    s1 s2 XCPU
+    MUL
+    OVER
+    0 EQINT
+  }>
+  NIP
+  NIP
+}>
+num_to_str PROC:<{
+  NEWC
+  UNTIL:<{
+    SWAP
+    10 PUSHINT
+    DIVMOD
+    48 ADDCONST
+    NEWC
+    8 STU
+    ROT
+    STBR
+    OVER
+    0 EQINT
+  }>
+  NIP
+  ENDC
+  CTOS
+}>
+str_to_num PROC:<{
+  0 PUSHINT
+  OVER
+  SBITS
+  3 RSHIFT#
+  UNTIL:<{
+    DEC
+    s0 s2 XCHG
+    8 LDU
+    SWAP
+    parse_number CALLDICT
+    10 PUSHINT
+    s4 PUSH
+    pow CALLDICT
+    MUL
+    s1 s2 XCHG
+    ADD
+    s2 PUSH
+    0 EQINT
+    s1 s3 s0 XCHG3
+  }>
+  DROP
+  NIP
+}>
+is_sep PROCREF:<{
+  EQUAL
+  IFJMP:<{
+    TRUE
+  }>
+  FALSE
+}>
+slice_to_sep PROC:<{
+  OVER
+  SBITS
+  2DUP
+  GEQ
+  42 THROWIF
+  0 PUSHINT
+  UNTIL:<{
+    FALSE
+    s3 s1 PUSH2
+    ADD
+    s5 s(-1) PUXC
+    8 PUSHINT
+    SDSUBSTR
+    8 LDU
+    DROP
+    44 PUSHINT
+    is_sep INLINECALLDICT
+    IF:<{
+      DROP
+      TRUE
+    }>ELSE<{
+      SWAP
+      8 ADDCONST
+      SWAP
+    }>
+    s3 s1 PUSH2
+    ADD
+    s3 PUSH
+    GEQ
+    IF:<{
+      DROP
+      TRUE
+    }>
+  }>
+  NIP
+  s2 s1 s2 XCPU2
+  SDSUBSTR
+  s0 s2 XCHG
+  ADD
+}>
+slice_equal PROC:<{
+  SWAP
+  HASHSU
+  SWAP
+  HASHSU
+  EQUAL
+}>
+decode PROC:<{
+  DUP
+  SBITS
+  DUP
+  384 PUSHINT
+  NEQ
+  40 THROWIF
+  3 RSHIFT#
+  NEWC
+  UNTIL:<{
+    s0 s2 XCHG
+    8 LDU
+    OVER
+    64 GTINT
+    s2 PUSH
+    91 LESSINT
+    AND
+    IF:<{
+      SWAP
+      -65 ADDCONST
+    }>ELSE<{
+      OVER
+      96 GTINT
+      s2 PUSH
+      123 LESSINT
+      AND
+      IF:<{
+        SWAP
+        -71 ADDCONST
+      }>ELSE<{
+        OVER
+        47 GTINT
+        s2 PUSH
+        58 LESSINT
+        AND
+        IF:<{
+          SWAP
+          4 ADDCONST
+        }>ELSE<{
+          OVER
+          95 EQINT
+          IF:<{
+            NIP
+            63 PUSHINT
+          }>ELSE<{
+            OVER
+            45 EQINT
+            IF:<{
+              NIP
+              62 PUSHINT
+            }>ELSE<{
+              SWAP
+            }>
+          }>
+        }>
+      }>
+    }>
+    s0 s3 XCHG2
+    6 STU
+    SWAP
+    DEC
+    DUP
+    0 EQINT
+    s1 s2 XCHG
+  }>
+  NIP
+  NIP
+  ENDC
+  CTOS
+}>
+send_message_back PROC:<{
+  0 PUSHINT
+  DUP
+  24 PUSHINT
+  NEWC
+  6 STU
+  s0 s6 XCHG2
+  STSLICER
+  s0 s3 XCHG2
+  STGRAMS
+  s1 s4 XCHG
+  107 STU
+  32 STU
+  SWAP
+  STSLICER
+  ENDC
+  SWAP
+  SENDRAWMSG
+}>
+load_data PROC:<{
+  c4 PUSH
+  CTOS
+  32 LDU
+  256 LDU
+  LDDICT
+  LDGRAMS
+  ENDS
+}>
+get_random_roll PROC:<{
+  HASHSU
+  100 PUSHINT
+  MOD
+  INC
+}>
+calc_payout PROC:<{
+  100 PUSHINT
+  SWAP
+  SUB
+  s1 s2 XCHG
+  MUL
+  SWAP
+  DEC
+  DIV
+}>
+get_bet? PROC:<{
+  load_data CALLDICT
+  s1 s3 XCHG
+  3 BLKDROP
+  32 PUSHINT
+  DICTUGET
+  NULLSWAPIFNOT
+}>
+resolve_bet PROC:<{
+  load_data CALLDICT
+  s5 PUSH
+  get_bet? CALLDICT
+  61 THROWIFNOT
+  8 LDU
+  LDGRAMS
+  LDMSGADDR
+  LDMSGADDR
+  LDGRAMS
+  256 LDU
+  DROP
+  s10 s8 PUSH2
+  CHKSIGNU
+  34 THROWIFNOT
+  32 PUSHINT
+  s11 s7 s7 PUXC2
+  DICTUDEL
+  62 THROWIFNOT
+  ACCEPT
+  2 PUSHINT
+  s7 PUSH
+  0 GTINT
+  IF:<{
+    DROP
+    1 PUSHINT
+  }>
+  s4 s5 s(-1) XCPUXC
+  calc_payout CALLDICT
+  s0 s9 XCHG
+  get_random_roll CALLDICT
+  DUP
+  1000000000 PUSHINT
+  s0 s6 XCHG
+  LESS
+  IF:<{
+    s4 s9 XCPU
+    ADD
+    s0 s4 XCHG
+  }>
+  NEWC
+  x{746F6E3737372E696F202D206C75636B79206E756D62657220} STSLICECONST
+  SWAP
+  num_to_str CALLDICT
+  STSLICER
+  x{2066656C6C20666F722062657474696E67207769746820696420} STSLICECONST
+  s0 s10 XCHG
+  num_to_str CALLDICT
+  s1 s10 XCHG
+  STSLICER
+  ENDC
+  CTOS
+  3 ROLL
+  2 PUSHINT
+  send_message_back CALLDICT
+  s2 PUSH
+  0 GTINT
+  IF:<{
+    NEWC
+    x{506C6179206F6E20746F6E3737372E696F} STSLICECONST
+    ENDC
+    CTOS
+    s7 s0 s3 XC2PU
+    2 PUSHINT
+    send_message_back CALLDICT
+    SWAP
+    SUB
+    s0 s4 XCHG
+  }>ELSE<{
+    s6 s2 XCHG2
+    2DROP
+  }>
+  s0 s4 XCHG
+  1000000000 PUSHINT
+  SUB
+  s0 s3 XCHG2
+  SUB
+  SWAP
+  INC
+  NEWC
+  32 STU
+  s1 s2 XCHG
+  256 STU
+  s1 s2 XCHG
+  STDICT
+  SWAP
+  STGRAMS
+  ENDC
+  c4 POP
+}>
+add_to_queue PROC:<{
+  load_data CALLDICT
+  NEWC
+  s0 s7 XCHG2
+  STSLICER
+  s1 s5 XCHG
+  256 STU
+  s0 s6 s4 XCHG3
+  32 PUSHINT
+  DICTUADDB
+  61 THROWIFNOT
+  NEWC
+  s1 s3 XCHG
+  32 STU
+  s1 s4 XCHG
+  256 STU
+  STDICT
+  s0 s2 XCHG
+  ADD
+  STGRAMS
+  ENDC
+  c4 POP
+}>
+0 PROC:<{
+  SWAP
+  CTOS
+  4 LDU
+  NIP
+  LDMSGADDR
+  DROP
+  OVER
+  SBITS
+  DUP
+  33 LESSINT
+  IF:<{
+    0 THROW
+  }>
+  s2 PUSH
+  32 PUSHINT
+  slice_to_sep CALLDICT
+  8 ADDCONST
+  s4 s(-1) PUXC
+  slice_to_sep CALLDICT
+  2 PUSHINT
+  0 PUSHINT
+  MYADDR
+  s0 s9 XCHG
+  1000000000 PUSHINT
+  SUB
+  s0 s3 XCHG
+  8 ADDCONST
+  s0 s6 PUSH2
+  LESS
+  IF:<{
+    s8 PUSH
+    LDREF
+    DROP
+    DUP
+    CTOS
+    SBITS
+    s8 s2 XCPU
+    SUB
+    s0 s8 XCHG2
+    ADD
+    384 PUSHINT
+    NEQ
+    40 THROWIF
+    s1 s8 XCHG
+    slice_to_sep CALLDICT
+    DROP
+    NEWC
+    SWAP
+    STSLICER
+    s0 s5 XCHG
+    CTOS
+    s1 s5 XCHG
+    STSLICER
+    ENDC
+    CTOS
+    decode CALLDICT
+    8 PUSHINT
+    SDSKIPFIRST
+    s0 s4 PUSH2
+    SDCUTFIRST
+    SWAP
+    8 PUSHINT
+    SDSKIPFIRST
+    16 PUSHINT
+    SDSKIPLAST
+    SWAP
+    2 LDI
+    DROP
+    NEWC
+    b{1000100} STSLICECONST
+    8 STI
+    SWAP
+    STSLICER
+    ENDC
+    CTOS
+    4 PUSHINT
+    SDSKIPFIRST
+    s0 s5 PUSH2
+    slice_equal CALLDICT
+    OVER
+    MYADDR
+    slice_equal CALLDICT
+    AND
+    IFNOT:<{
+      s4 POP
+      s5 POP
+      s5 POP
+      1 PUSHINT
+      s4 PUSH
+      5 MULCONST
+      1000 PUSHINT
+      DIV
+    }>ELSE<{
+      s7 s6 s0 XCHG3
+      s2 s4 XCHG
+      DROP
+    }>
+  }>ELSE<{
+    s4 s9 XCHG
+    s3 s8 XCHG
+    s4 s6 XCHG
+    s4 s3 s0 XCHG3
+    3 BLKDROP
+  }>
+  s0 s2 XCHG
+  str_to_num CALLDICT
+  DUP
+  2 LESSINT
+  OVER
+  98 GTINT
+  OR
+  40 THROWIF
+  s0 s6 XCHG
+  str_to_num CALLDICT
+  DUP
+  9999 PUSHINT
+  GREATER
+  41 THROWIF
+  load_data CALLDICT
+  s0 s3 XCHG
+  3 BLKDROP
+  BALANCE
+  FIRST
+  s7 s8 s3 PU2XC
+  calc_payout CALLDICT
+  s4 PUSH
+  ADD
+  OVER
+  ADD
+  1000000000 PUSHINT
+  ADD
+  s3 s3 XCPU
+  LESS
+  IFJMP:<{
+    s1 s4 XCHG
+    4 BLKDROP
+    s2 POP
+    s2 POP
+    NEWC
+    32 STU
+    ENDC
+    CTOS
+    0 PUSHINT
+    64 PUSHINT
+    send_message_back CALLDICT
+  }>
+  NEWC
+  s1 s8 XCHG
+  8 STU
+  s0 s6 XCHG2
+  STGRAMS
+  s0 s4 XCHG2
+  STSLICER
+  ROT
+  STSLICER
+  SWAP
+  STGRAMS
+  ENDC
+  CTOS
+  LTIME
+  ADDRAND
+  s2 PUSH
+  NEWC
+  32 STU
+  OVER
+  STSLICER
+  ENDC
+  CTOS
+  HASHSU
+  ADDRAND
+  RANDU256
+  s2 s4 XCHG2
+  SUB
+  s1 s3 s0 XCHG3
+  add_to_queue CALLDICT
+}>
+-1 PROC:<{
+  load_data CALLDICT
+  s0 s4 XCHG
+  9 PUSHPOW2
+  LDSLICEX
+  LDREF
+  DROP
+  CTOS
+  DUP
+  HASHSU
+  s0 s2 s4 XC2PU
+  CHKSIGNU
+  34 THROWIFNOT
+  32 LDU
+  s1 s4 XCPU
+  EQUAL
+  33 THROWIFNOT
+  32 LDU
+  OVER
+  286331153 PUSHINT
+  EQUAL
+  IFJMP:<{
+    2DROP
+    ACCEPT
+    s0 s2 XCHG
+    INC
+    NEWC
+    32 STU
+    256 STU
+    STDICT
+    SWAP
+    STGRAMS
+    ENDC
+    c4 POP
+  }>
+  s2 POP
+  s2 POP
+  s2 POP
+  s2 POP
+  OVER
+  572662306 PUSHINT
+  EQUAL
+  IFJMP:<{
+    NIP
+    32 LDU
+    9 PUSHPOW2
+    LDSLICEX
+    DROP
+    resolve_bet CALLDICT
+  }>
+  SWAP
+  858993459 PUSHINT
+  EQUAL
+  IF:<{
+    LDREF
+    DROP
+    ACCEPT
+    SETCODE
+  }>ELSE<{
+    DROP
+  }>
+}>
+get_seqno PROC:<{
+  load_data CALLDICT
+  3 BLKDROP
+}>
+get_bet_seed PROC:<{
+  get_bet? CALLDICT
+  61 THROWIFNOT
+  8 LDU
+  NIP
+  LDGRAMS
+  NIP
+  LDMSGADDR
+  NIP
+  LDMSGADDR
+  NIP
+  LDGRAMS
+  NIP
+  256 LDU
+  DROP
+}>
+get_liabilities PROC:<{
+  load_data CALLDICT
+  s0 s3 XCHG
+  3 BLKDROP
+}>
+get_by_slice PROC:<{
+}>
+
+}END>c
+// contract code
+
+$# 1 < { ."Invalid number of arguments" } if
+$1 =: file-base
+
+file-base +".pk" load-keypair nip constant wallet_pk
+
+dictnew constant init-queue-dict
+
+<b 1 32 u, wallet_pk priv>pub B, init-queue-dict dict, 0 Gram, b> // initial persistance data
+null
+// no libraries
+<b b{0011} s, 3 roll ref, rot ref, swap dict, b> // StateInit: code, data, libs
+
+dup ."StateInit: " <s csr. cr
+dup hashu wc swap 2dup 2constant smartcont_addr
+."new wallet address = " 2dup .addr cr
+2dup file-base +".addr" save-address-verbose
+."Non-bounceable address (for init): " 2dup 7 .Addr cr
+."Bounceable address (for later access): " 6 .Addr cr
+
+<b 1 32 u, x{11111111} s, b> // body
+dup hashu wallet_pk ed25519_sign_uint // create signature of body
+
+<b b{1000100} s, smartcont_addr addr, b{000010} s, 3 roll <s s, b{0} s, swap B, swap ref, b> // enveloping message 
+
+// save to binary file
+2 boc+>B
+"dice.boc"
+B>file
+// about info
+."addr" smartcont_addr .addr
+."Non-bounceable address (for init): " smartcont_addr 7 .Addr cr
+."Bounceable address (for later access): " smartcont_addr 6 .Addr cr
