@@ -40,7 +40,7 @@ for n in $(seq 1 $NUMBER_OF_PLAYERS);
 do
 echo "Creating a wallet for a player $n..."
 
-fift -s $WALLET_CONTRACT -1 player-wallet${n}
+./fift -s $WALLET_CONTRACT -1 player-wallet${n}
 NB_WALLET_ADDR=$(./fift -s ./contracts/show-addr.fif player-wallet${n} | grep 'Non-bounceable address' |  awk '{print $6}')
 
 SEQNO=$(./lite-client -C ton-lite-client-test-local.config.json -c "runmethod kf8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIue seqno" -v 0 | grep result: | awk '/\[ [0-9]* \]/{print $3}')
