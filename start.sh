@@ -30,7 +30,7 @@ docker cp ton-node:/usr/local/bin/generate-random-id .
 docker cp ton-node:/usr/local/bin/lite-client .
 docker cp ton-node:/usr/local/bin/fift .
 
-LITE_SERVER_KEY=$(generate-random-id -m id -k liteserver | jq 'select(.["@type"] == "pub.ed25519") | .["key"]')
+LITE_SERVER_KEY=$(./generate-random-id -m id -k liteserver | jq 'select(.["@type"] == "pub.ed25519") | .["key"]')
 sed -e "s#LITE_SERVER_KEY#${LITE_SERVER_KEY}#g" -e "s#ROOT_HASH#$(cat ./zerostate.rhash | base64)#g" -e "s#FILE_HASH#$(cat ./zerostate.fhash | base64)#g" ton-private-testnet-local.config.json.template > ton-lite-client-test-local.config.json
 
 sleep 120
@@ -41,33 +41,33 @@ do
 echo "Creating a wallet for a player $n..."
 
 fift -s $WALLET_CONTRACT -1 player-wallet${n}
-NB_WALLET_ADDR=$(fift -s ./contracts/show-addr.fif player-wallet${n} | grep 'Non-bounceable address' |  awk '{print $6}')
+NB_WALLET_ADDR=$(./fift -s ./contracts/show-addr.fif player-wallet${n} | grep 'Non-bounceable address' |  awk '{print $6}')
 
-SEQNO=$(lite-client -C ton-lite-client-test-local.config.json -c "runmethod kf8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIue seqno" -v 0 | grep result: | awk '/\[ [0-9]* \]/{print $3}')
-fift -s ./contracts/wallet.fif docker $NB_WALLET_ADDR $SEQNO $PLAYERS_INIT_BALANCE
+SEQNO=$(./lite-client -C ton-lite-client-test-local.config.json -c "runmethod kf8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIue seqno" -v 0 | grep result: | awk '/\[ [0-9]* \]/{print $3}')
+./fift -s ./contracts/wallet.fif docker $NB_WALLET_ADDR $SEQNO $PLAYERS_INIT_BALANCE
 
-lite-client -C ton-lite-client-test-local.config.json -c "sendfile wallet-query.boc"
+./lite-client -C ton-lite-client-test-local.config.json -c "sendfile wallet-query.boc"
 sleep 10
 
-lite-client -C ton-lite-client-test-local.config.json -c "sendfile player-wallet${n}-query.boc"
+./lite-client -C ton-lite-client-test-local.config.json -c "sendfile player-wallet${n}-query.boc"
 done
 
 # Deploy dice contract
-fift -s $DICE_CONTRACT $DICE_PK_BASE
-DICE_ADDR=$(fift -s ./contracts/show-addr.fif $DICE_PK_BASE | grep 'Non-bounceable address' |  awk '{print $6}')
+./fift -s $DICE_CONTRACT $DICE_PK_BASE
+DICE_ADDR=$(./fift -s ./contracts/show-addr.fif $DICE_PK_BASE | grep 'Non-bounceable address' |  awk '{print $6}')
 
-SEQNO=$(lite-client -C ton-lite-client-test-local.config.json -c "runmethod kf8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIue seqno" -v 0 | grep result: | awk '/\[ [0-9]* \]/{print $3}')
-fift -s ./contracts/wallet.fif docker $DICE_ADDR $SEQNO $DICE_BANK
+SEQNO=$(./lite-client -C ton-lite-client-test-local.config.json -c "runmethod kf8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIue seqno" -v 0 | grep result: | awk '/\[ [0-9]* \]/{print $3}')
+./fift -s ./contracts/wallet.fif docker $DICE_ADDR $SEQNO $DICE_BANK
 
-lite-client -C ton-lite-client-test-local.config.json -c "sendfile wallet-query.boc"
+./lite-client -C ton-lite-client-test-local.config.json -c "sendfile wallet-query.boc"
 sleep 10
 
-lite-client -C ton-lite-client-test-local.config.json -c "sendfile dice.boc"
+./lite-client -C ton-lite-client-test-local.config.json -c "sendfile dice.boc"
 
 # Starting bets
 for n in $(seq 1 $NUMBER_OF_PLAYERS);
 do
 echo "Starting bets by player $n..."
-WALLET_ADDR=$(fift -s ./contracts/show-addr.fif player-wallet${n} | grep 'Bounceable address' |  awk '{print $6}')
+WALLET_ADDR=$(./fift -s ./contracts/show-addr.fif player-wallet${n} | grep 'Bounceable address' |  awk '{print $6}')
 ./auto-bet.sh player-wallet${n} $WALLET_ADDR $DICE_ADDR $PLAYER_BET_AMOUNT $PLAYER_COUNT_GAMES &
 done
