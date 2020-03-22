@@ -6,4 +6,8 @@ fift
 lite-client
 ton-lite-client-test-local.config.json
 zerostate.fhash
+*.boc
+*.pk
+*.addr
 zerostate.rhash
+lib/
