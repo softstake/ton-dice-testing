@@ -1,0 +1,9 @@
+docker.addr
+docker.pk
+generate-random-id
+liteserver
+fift
+lite-client
+ton-lite-client-test-local.config.json
+zerostate.fhash
+zerostate.rhash
