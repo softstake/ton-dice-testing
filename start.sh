@@ -26,6 +26,7 @@ docker cp ton-node:/var/ton-work/contracts/zerostate.rhash .
 docker cp ton-node:/var/ton-work/contracts/main-wallet.pk docker.pk
 docker cp ton-node:/var/ton-work/contracts/main-wallet.addr docker.addr
 docker cp ton-node:/var/ton-work/db/liteserver .
+docker cp ton-node:/usr/local/bin/generate-random-id .
 
 LITE_SERVER_KEY=$(generate-random-id -m id -k liteserver | jq 'select(.["@type"] == "pub.ed25519") | .["key"]')
 sed -e "s#LITE_SERVER_KEY#${LITE_SERVER_KEY}#g" -e "s#ROOT_HASH#$(cat ./zerostate.rhash | base64)#g" -e "s#FILE_HASH#$(cat ./zerostate.fhash | base64)#g" ton-private-testnet-local.config.json.template > ton-lite-client-test-local.config.json
