@@ -660,11 +660,13 @@ get_by_slice PROC:<{
 $# 1 < { ."Invalid number of arguments" } if
 $1 =: file-base
 
-file-base +".pk" load-keypair nip constant wallet_pk
+file-base +".pk" load-generate-keypair
+=: private-key
+=: public-key
 
 dictnew constant init-queue-dict
 
-<b 1 32 u, wallet_pk priv>pub B, init-queue-dict dict, 0 Gram, b> // initial persistance data
+<b 1 32 u, public-key B, init-queue-dict dict, 0 Gram, b> // initial persistance data
 null
 // no libraries
 <b b{0011} s, 3 roll ref, rot ref, swap dict, b> // StateInit: code, data, libs
@@ -677,7 +679,7 @@ dup hashu wc swap 2dup 2constant smartcont_addr
 ."Bounceable address (for later access): " 6 .Addr cr
 
 <b 1 32 u, x{11111111} s, b> // body
-dup hashu wallet_pk ed25519_sign_uint // create signature of body
+dup hashu private-key ed25519_sign_uint // create signature of body
 
 <b b{1000100} s, smartcont_addr addr, b{000010} s, 3 roll <s s, b{0} s, swap B, swap ref, b> // enveloping message 
 
