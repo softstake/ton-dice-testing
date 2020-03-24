@@ -31,10 +31,10 @@ docker cp ton-node:/var/ton-work/db/liteserver .
 docker cp ton-node:/usr/local/bin/generate-random-id .
 docker cp ton-node:/usr/local/bin/lite-client .
 docker cp ton-node:/usr/local/bin/fift .
-#docker cp ton-node:/usr/local/lib/fift/ ./lib/
+docker cp ton-node:/usr/local/lib/fift/ ./lib/
 
-#export FIFTPATH="./lib/fift/"
-export FIFTPATH="/home/me/ton/crypto/fift/lib/"
+export FIFTPATH="./lib/fift/"
+#export FIFTPATH="/home/me/ton/crypto/fift/lib/"
 
 
 LITE_SERVER_KEY=$(./generate-random-id -m id -k liteserver | jq 'select(.["@type"] == "pub.ed25519") | .["key"]')
