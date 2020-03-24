@@ -32,6 +32,7 @@ docker cp ton-node:/usr/local/bin/generate-random-id .
 docker cp ton-node:/usr/local/bin/lite-client .
 docker cp ton-node:/usr/local/bin/fift .
 docker cp ton-node:/usr/local/lib/fift/ ./lib/
+docker cp ton-node:/var/ton-work/contracts/wallet.fif ./contracts/wallet.fif
 
 export FIFTPATH="./lib/"
 #export FIFTPATH="/home/me/ton/crypto/fift/lib/"
