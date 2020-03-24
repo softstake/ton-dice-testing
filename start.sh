@@ -33,7 +33,7 @@ docker cp ton-node:/usr/local/bin/lite-client .
 docker cp ton-node:/usr/local/bin/fift .
 docker cp ton-node:/usr/local/lib/fift/ ./lib/
 
-export FIFTPATH="./lib/fift/"
+export FIFTPATH="./lib/"
 #export FIFTPATH="/home/me/ton/crypto/fift/lib/"
 
 
