@@ -19,7 +19,7 @@ PLAYER_COUNT_GAMES=10
 
 # Starting private TON node
 docker volume create ton-db
-docker run -d --name ton-node --mount source=ton-db,target=/var/ton-work/db -e "PUBLIC_IP=127.0.0.1" -e "PUBLIC_PORT=9995" -e "CONSOLE_PORT=9994" -e "LITESERVER=true" -e "LITE_PORT=9993" -it -p 9993:9993 -p 9994:9994 -p 9995:9995 kaemel/ton-private-net:0.4.20
+docker run -d --name ton-node --mount source=ton-db,target=/var/ton-work/db -e "PUBLIC_IP=127.0.0.1" -e "PUBLIC_PORT=9995" -e "CONSOLE_PORT=9994" -e "LITESERVER=true" -e "LITE_PORT=9993" -it -p 9993:9993 -p 9994:9994 -p 9995:9995 relclick/ton-private-network:latest
 
 sleep 60
 
@@ -33,8 +33,7 @@ docker cp ton-node:/usr/local/bin/lite-client .
 docker cp ton-node:/usr/local/bin/fift .
 docker cp ton-node:/usr/local/lib/fift/ ./lib/
 
-export FIFTPATH="./lib/fift/"
-#export FIFTPATH="/home/me/ton/crypto/fift/lib/"
+export FIFTPATH="./lib/"
 
 
 LITE_SERVER_KEY=$(./generate-random-id -m id -k liteserver | jq 'select(.["@type"] == "pub.ed25519") | .["key"]')
