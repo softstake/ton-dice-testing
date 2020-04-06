@@ -18,10 +18,10 @@ do
 roll_under=$(jot -r 1 2 96)
 
 cmd="runmethod ${wallet_addr} seqno"
-seq=$(./lite-client -C ton-lite-client-test-local.config.json -c "$cmd" -v 0 | grep result: | awk '/\[ [0-9]* \]/{print $3}')
+seq=$(lite-client -C ton-lite-client-test-local.config.json -c "$cmd" -v 0 | grep result: | awk '/\[ [0-9]* \]/{print $3}')
 echo "seq: ${seq}, roll_under: ${roll_under}"
 
 cmd="sendfile ${file_base}.boc"
-./fift -s ./bet-query.fif ${seq} ${file_base} ${wallet_addr} ${dice_addr} ${bet_amount} ${roll_under} ${num} ${file_base} && ./lite-client -C ton-lite-client-test-local.config.json -c "$cmd";
+fift -s ./bet-query.fif ${seq} ${file_base} ${wallet_addr} ${dice_addr} ${bet_amount} ${roll_under} ${num} ${file_base} && lite-client -C ton-lite-client-test-local.config.json -c "$cmd";
 sleep 5;
 done
