@@ -2,12 +2,12 @@
 
 "TonUtil.fif" include
 
-{ ."usage: " @' $0 type ."<filename-base> <dice-addr> <seqno> <bet-id> <seed> [<savefile>]" cr
+{ ."usage: " @' $0 type ."<filename-base> <dice-addr> <seqno> <seed> [<savefile>]" cr
   ."Creates request a resolve bet to fair dice game"
   ."and saves it into <savefile>.boc ('resolve-query.boc' by default)" cr 1 halt
 } : usage
 
-$# 7 < ' usage if
+$# 6 < ' usage if
 
 false constant bounce
 
@@ -17,12 +17,11 @@ $3 bounce parse-load-address =: bounce 2=: source_addr
 $4 bounce parse-load-address =: bounce 2=: dest_addr
 $5 $>GR =: amount
 $6 =: roll_under
-$7 =: bet_id
-$8 "bet-query" replace-if-null =: savefile
+$7 "bet-query" replace-if-null =: savefile
 
 file-base +".pk" load-keypair nip constant wallet_pk
 
-<b roll_under $, "," $, bet_id $, b>
+<b roll_under $, b>
 
 // create a message (NB: 01b00.., b = bounce)
 <b b{01} s, bounce 1 i, b{000100} s, dest_addr addr,
